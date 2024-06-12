@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            height: 100vh;
+            width: 100vw;
+        }
+        .top {
+            display: flex;
+            flex-direction: row;
+            height: 50%;
+        }
+
+        .text, .base {
+            width: 50%;
+            border: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .o2, .o3, .o3-1 {
+            border: 1px solid #ccc;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #text-view {
+            height: calc(100% - 30px);
+        }
+
+        #base-content {
+            height: calc(100% - 30px);
+            white-space: pre-wrap;
+            overflow: scroll;
+            font-size: 14px;
+        }
+        #content-2 {
+            height: calc(100% - 30px);
+            white-space: pre-wrap;
+            overflow: scroll;
+            font-size: 14px;
+        }
+        #content-3 {
+            height: calc(100% - 30px);
+            white-space: pre-wrap;
+            overflow: scroll;
+            font-size: 14px;
+        }
+        #content-3-1 {
+            height: calc(100% - 30px);
+            white-space: pre-wrap;
+            overflow: scroll;
+            font-size: 14px;
+        }
+        .title {
+            height: 30px;
+            line-height: 30px;
+            background: #ccc;
+            padding: 0 10px;
+            border-right: 1px solid white;
+        }
+
+        .bottom {
+            display: flex;
+            flex-direction: row;
+            height: 50%;
+        }
+    </style>
+</head>
+<body>
+    <script type="module">
+        import { openApiTransform, initBaseTemplate } from '../lib/index.esm.js';
+        function transform() {
+            let text = document.getElementById('text-view').value;
+            let baseDom = document.getElementById('base-content');
+            baseDom.innerHTML = JSON.stringify(initBaseTemplate(text), null, 3);
+            let o2Dom = document.getElementById('content-2');
+            // o2Dom.innerHTML = JSON.stringify(openApiTransform(text, '2.0'), null, 3);
+            // let o3Dom = document.getElementById('content-3');
+            // o3Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.0'), null, 3);
+            // let o31Dom = document.getElementById('content-3-1');
+            // o31Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.1'), null, 3);
+        }
+        window.transform = transform;
+    </script>
+    <div class="top">
+        <div class="text">
+            <div class="title">
+                原始
+                <button
+                    id="btn"
+                    onclick="transform()"
+                >转换</button>
+            </div>
+            <textarea
+                id="text-view"
+            ></textarea>
+        </div>
+        <div class="base">
+            <div class="title">base</div>
+            <pre id="base-content"></pre>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="o2">
+            <div class="title">2.0</div>
+            <pre id="content-2"></pre>
+        </div>
+        <div class="o3">
+            <div class="title">3.0</div>
+            <pre id="content-3"></pre>
+        </div>
+        <div class="o3-1">
+            <div class="title">3.1</div>
+            <pre id="content-3-1"></pre>
+        </div>
+    </div>
+</body>
+</html>
