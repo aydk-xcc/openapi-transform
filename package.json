@@ -1,6 +1,6 @@
 {
   "name": "openapi-transform",
-  "version": "0.0.6：",
+  "version": "0.0.6",
   "description": "",
   "main": "lib/index.esm.js",
   "type": "module",
