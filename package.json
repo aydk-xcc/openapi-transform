@@ -1,16 +1,20 @@
 {
   "name": "openapi-transform",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "",
   "main": "lib/index.esm.js",
   "type": "module",
   "author": "aydk-xcc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aydk-xcc/openapi-transform"
+  },
   "scripts": {
     "rollup:build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "license": "ISC",
+  "license": "Apache License 2.0",
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
