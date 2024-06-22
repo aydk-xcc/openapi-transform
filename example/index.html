@@ -79,11 +79,11 @@
             let baseDom = document.getElementById('base-content');
             baseDom.innerHTML = JSON.stringify(initBaseTemplate(text), null, 3);
             let o2Dom = document.getElementById('content-2');
-            // o2Dom.innerHTML = JSON.stringify(openApiTransform(text, '2.0'), null, 3);
-            // let o3Dom = document.getElementById('content-3');
-            // o3Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.0'), null, 3);
-            // let o31Dom = document.getElementById('content-3-1');
-            // o31Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.1'), null, 3);
+            o2Dom.innerHTML = JSON.stringify(openApiTransform(text, '2.0'), null, 3);
+            let o3Dom = document.getElementById('content-3');
+            o3Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.0'), null, 3);
+            let o31Dom = document.getElementById('content-3-1');
+            o31Dom.innerHTML = JSON.stringify(openApiTransform(text, '3.1'), null, 3);
         }
         window.transform = transform;
     </script>

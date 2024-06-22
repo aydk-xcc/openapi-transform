@@ -1,4 +1,4 @@
-import { formatData2Json } from '../utils/utils.js'
+import {formatData2Json, isReferenceObject} from '../utils/utils.js';
 export function initBaseTemplate(data) {
     let dataJson = formatData2Json(data)
     let obj = {
@@ -20,12 +20,26 @@ export function initBaseTemplate(data) {
 }
 
 
-function initVersion(data) {
+export function initVersion(data) {
     return data.openapi || data.swagger;
 }
 
-function initPaths(data) {
+export function initPaths(data) {
+    if (!data.paths) {
+        return [];
+    }
     let paths = Object.keys(data.paths).map(path => {
+        if (path.startsWith('x-')) {
+            // 2.0 版本支持x-
+            return {
+                [path]: data.paths[path]
+            };
+        }
+
+        if (!path.startsWith('/')) {
+            return null;
+        }
+
         let pathInfo = data.paths[path];
         let obj = {
             path: path
@@ -34,7 +48,8 @@ function initPaths(data) {
             if (['$ref', 'servers', 'summary', 'description'].includes(method)) {
                 obj[method] = pathInfo[method];
             } else if (method === 'parameters') {
-                obj['parameters'] = initParameters(pathInfo[method]);
+                // v2.0
+                obj['parameters'] = initParameters(pathInfo['parameters']);
             } else {
                 // method
                 let methodInfo = {};
@@ -48,38 +63,52 @@ function initPaths(data) {
                             let mimTypes = getConsumes(data, pathInfo[method]);
                             let schema = bodyObj['schema'] || {};
                             methodInfo['requestBody'] = {
-                                description: bodyObj.description,
+                                description: bodyObj.description || '',
                                 content: {
                                     [mimTypes]: {
                                         schema: schema
                                     }
                                 },
-                                required: bodyObj.required
+                                required: !!bodyObj.required
                             };
                         }
                         let parameters = [];
                         pathInfo[method][key].forEach(item => {
-                            if (!item.schema && item.in !== 'body') {
+                            if (item['$ref']) {
+                                parameters.push(item);
+                            } else if (!item.schema && item.in !== 'body') {
                                 // 2.0 数据结构有问题
-                                let sch = {};
+                                let schema = {};
+                                let obj = {};
                                 Object.keys(item).forEach(key => {
-                                    if (!['name', 'in', 'description', 'required', 'deprecated', 'allowEmptyValue'].includes(key)) {
-                                        sch[key] = item[key];
+                                    if (['name', 'in', 'description', 'required', 'deprecated', 'allowEmptyValue'].includes(key)) {
+                                        obj[key] = item[key];
+                                    } else  if ([
+                                        'type',
+                                        'format',
+                                        'items',
+                                        'collectionFormat',
+                                        'default',
+                                        'maximum',
+                                        'exclusiveMaximum',
+                                        'minimum',
+                                        'exclusiveMinimum',
+                                        'maxLength',
+                                        'minLength',
+                                        'pattern',
+                                        'maxItems',
+                                        'minItems',
+                                        'uniqueItems',
+                                        'enum',
+                                        'multipleOf'
+                                    ].includes(key)) {
+                                        schema[key] = item[key];
                                     }
                                 });
-                                let obj = {
-                                    name: item.name,
-                                    in: item.in || 'query',
-                                    description: item.description,
-                                    required: item.required,
-                                    deprecated: item.deprecated,
-                                    allowEmptyValue: item.allowEmptyValue,
-                                    schema: sch
-                                };
+
+                                obj['schema'] = schema;
                                 parameters.push(obj);
                             } else if (item.schema && item.in !== 'body') {
-                                parameters.push(item);
-                            } else if (item['$ref']) {
                                 parameters.push(item);
                             }
                         });
@@ -89,20 +118,77 @@ function initPaths(data) {
                     if (key === 'responses') {
                         let responseList = [];
                         Object.keys(pathInfo[method][key]).forEach((responseKey, index) => {
+                            if (pathInfo[method][key][responseKey].$ref) {
+                                // 处理引用类型
+                                responseList.push({
+                                    code: responseKey,
+                                    ...pathInfo[method][key][responseKey]
+                                });
+                                return;
+                            }
                             let mimTypes = '*/*';
                             if (!pathInfo[method][key][responseKey].content) {
                                 mimTypes = getProduces(data, pathInfo[method]);
-                                responseList.push({
+                                let tempResponseObj = {
                                     code: responseKey,
-                                    description: pathInfo[method][key][responseKey].description,
                                     content: {
                                         [mimTypes]: {
-                                            schema: pathInfo[method][key][responseKey].schema,
-                                            examples: pathInfo[method][key][responseKey].examples
+                                            schema: pathInfo[method][key][responseKey].schema
                                         }
                                     },
-                                    headers: pathInfo[method][key][responseKey].headers,
-                                })
+                                    description: pathInfo[method][key][responseKey].description || ''
+                                };
+                                // example
+                                if (pathInfo[method][key][responseKey].examples &&
+                                    pathInfo[method][key][responseKey].examples[mimTypes]
+                                ) {
+                                    let tempExample = pathInfo[method][key][responseKey].examples[mimTypes];
+                                    tempResponseObj.content[mimTypes]['examples'] = {
+                                        [mimTypes]: {
+                                            value: tempExample,
+                                            summary: '',
+                                            description: ''
+                                        }
+                                    };
+                                }
+                                if (pathInfo[method][key][responseKey].headers) {
+                                    // 2.0 数据结构有问题
+                                    let schema = {};
+                                    let obj = {};
+                                    let headers = pathInfo[method][key][responseKey].headers;
+                                    Object.keys(headers).forEach(name => {
+                                        obj[name] = {};
+                                        Object.keys(headers[name]).forEach(key => {
+                                            if ('description' === key) {
+                                                obj[name][key] = headers[name][key];
+                                            } else  if ([
+                                                'type',
+                                                'format',
+                                                'items',
+                                                'collectionFormat',
+                                                'default',
+                                                'maximum',
+                                                'exclusiveMaximum',
+                                                'minimum',
+                                                'exclusiveMinimum',
+                                                'maxLength',
+                                                'minLength',
+                                                'pattern',
+                                                'maxItems',
+                                                'minItems',
+                                                'uniqueItems',
+                                                'enum',
+                                                'multipleOf'
+                                            ].includes(key)) {
+                                                schema[key] = headers[name][key];
+                                            }
+                                        });
+
+                                        obj[name]['schema'] = schema;
+                                    });
+                                    tempResponseObj.headers = obj;
+                                }
+                                responseList.push(tempResponseObj)
                             } else {
                                 let obj = {
                                     code: responseKey,
@@ -119,35 +205,54 @@ function initPaths(data) {
         });
         return obj;
     });
-    return paths;
+    // 过滤非法数据
+    return paths.filter(item => item);
 }
 
-function initParameters(parametersData) {
+// 处理外层的Parameters
+export function initParameters(parametersData) {
     let parameters = [];
-    Object.keys(parametersData).forEach(item => {
-        if (item['$ref']) {
+    parametersData.forEach(item => {
+        if (isReferenceObject(item)) {
             // 引用
             parameters.push(item);
         } else {
             if (item.in === 'body' || item.schema) {
+                // 2.0 只有body有schema 可以了3.* 对等
+                // 3.* 直接使用
                 parameters.push(item);
             } else {
                 // 2.0 数据结构有问题
+                // 需要构造schema
                 let schema = {};
+                let obj = {};
                 Object.keys(item).forEach(key => {
                     if (['name', 'in', 'description', 'required', 'deprecated', 'allowEmptyValue'].includes(key)) {
+                        obj[key] = item[key];
+                    } else  if ([
+                        'type',
+                        'format',
+                        'items',
+                        'collectionFormat',
+                        'default',
+                        'maximum',
+                        'exclusiveMaximum',
+                        'minimum',
+                        'exclusiveMinimum',
+                        'maxLength',
+                        'minLength',
+                        'pattern',
+                        'maxItems',
+                        'minItems',
+                        'uniqueItems',
+                        'enum',
+                        'multipleOf'
+                    ].includes(key)) {
                         schema[key] = item[key];
                     }
                 });
-                let obj = {
-                    name: item.name,
-                    in: item.in || 'query',
-                    description: item.description,
-                    required: item.required,
-                    deprecated: item.deprecated,
-                    allowEmptyValue: item.allowEmptyValue,
-                    schema: schema
-                };
+
+                obj['schema'] = schema;
                 parameters.push(obj);
             }
         }
@@ -155,7 +260,7 @@ function initParameters(parametersData) {
     return parameters;
 };
 
-function getConsumes(data, codeData) {
+export function getConsumes(data, codeData) {
     if (codeData.consumes && codeData.consumes.length > 0) {
         return codeData.consumes[0];
     } else if (data.consumes && data.consumes.length > 0) {
@@ -164,7 +269,7 @@ function getConsumes(data, codeData) {
     return '*/*';
 }
 
-function getProduces(data, codeData) {
+export function getProduces(data, codeData) {
     if (codeData.produces && codeData.produces.length > 0) {
         return codeData.produces[0];
     } else if (data.produces && data.produces.length > 0) {
@@ -173,7 +278,7 @@ function getProduces(data, codeData) {
     return '*/*';
 }
 
-function initComponents(openApiDefinition) {
+export function initComponents(openApiDefinition) {
     // 获取components
     if (openApiDefinition.components) {
         return openApiDefinition.components;
@@ -195,7 +300,7 @@ function initComponents(openApiDefinition) {
     }
 }
 
-function initRef(obj) {
+export function initRef(obj) {
     let str = JSON.stringify(obj);
     str = str.replace(/#\/definitions/g,'#/components/schemas');
     str = str.replace(/#\/parameters/g,'#/components/parameters');
@@ -204,13 +309,17 @@ function initRef(obj) {
     return JSON.parse(str);
 }
 
-function initServers(openApiDefinition) {
+export function initServers(openApiDefinition) {
     if (openApiDefinition.servers) {
         return openApiDefinition.servers;
     }
 
     if(openApiDefinition.schemes && openApiDefinition.host && openApiDefinition.basePath) {
-        return openApiDefinition.schemes.map(scheme => {
+        let arr = openApiDefinition.schemes;
+        if (arr.length === 0) {
+            arr.push('http');
+        }
+        return arr.map(scheme => {
             return {
                 url: `${scheme}://${openApiDefinition.host}${openApiDefinition.basePath}`,
                 description: ''
