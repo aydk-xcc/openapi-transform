@@ -1,6 +1,6 @@
 {
   "name": "openapi-transform",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "main": "lib/index.esm.js",
   "type": "module",
@@ -13,7 +13,12 @@
     "rollup:build": "rollup -c",
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": [
+    "openApi",
+    "openapi",
+    "openapi-transform",
+    "transform"
+  ],
   "license": "Apache License 2.0",
   "dependencies": {
     "js-yaml": "^4.1.0"

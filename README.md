@@ -14,13 +14,14 @@ npm install openapi-transform
 ```javascript
 import { openApiTransform } from 'openapi-transform';
 
-// let obj 任意版本(2.0 3.0 3.1)的openapi数据
-let result = openApiTransform(obj, '2.0');
+// let data 任意版本(2.0 3.0 3.1)的openapi数据
+// data 支持json和yaml
+let result = openApiTransform(data, '2.0');
 
 // 转换成3.0
-// let result = openApiTransform(obj, '3.0');
+// let result = openApiTransform(data, '3.0');
 
 // 转换成3.1
-// let result = openApiTransform(obj, '3.1');
+// let result = openApiTransform(data, '3.1');
 
 ```

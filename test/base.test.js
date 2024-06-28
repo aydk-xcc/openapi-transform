@@ -8,122 +8,28 @@ import {
     initServers,
     initPaths
 } from '../src/base';
-import {example_2_1} from './config/2_data.js';
-import {example_3_1} from './config/3_data.js';
+import {example_2, example_2_base} from './config/2_data.js';
+import {example_3, example_3_base} from './config/3_data.js';
+import {example_3_1, example_3_1_base} from './config/3_1_data.js';
 
 describe('2.0 to base', () => {
   test('initBaseTemplate', () => {
-    const obj = initBaseTemplate(example_2_1);
-    expect(obj).toMatchObject({
-      "version": "2.0",
-      info: {
-        version: '1.0',
-        title: 'Swagger',
-        description: '测试'
-      }
-    });
+    const obj = initBaseTemplate(example_2);
+    expect(obj).toEqual(example_2_base);
+  });
+});
+
+describe('3.0 to base', () => {
+  test('initBaseTemplate', () => {
+    const obj = initBaseTemplate(example_3);
+    expect(obj).toEqual(example_3_base);
   });
 });
 
 describe('3.1 to base', () => {
   test('initBaseTemplate', () => {
     const obj = initBaseTemplate(example_3_1);
-    expect(obj).toMatchObject({
-      "version": "3.1",
-      info: {
-        version: '1.0',
-        title: 'Swagger',
-        description: '测试'
-      },
-      paths: [{
-        path: '/demo',
-        get: {
-          parameters: [{
-            "name": "username",
-            "in": "path",
-            "description": "username to fetch",
-            "required": true,
-            schema: {
-              type: "string"
-            }
-          }, {
-            "name": "id",
-            "in": "header",
-            "description": "username to fetch",
-            "required": true,
-            schema: {
-              type: "string"
-            }
-          },{
-            "$ref": "#/components/schemas/Pet",
-          }],
-          'responses': [
-            {
-              code: '200',
-              content: {
-                "application/json": {
-                  schema: {
-                    "$ref": "#/components/schemas/Pet",
-                  },
-                  examples: {
-                    'application/json': {
-                      value: {
-                        name: 'Puma',
-                        type: 1,
-                        weight: 99.9
-                      }
-                    }
-                  }
-                },
-                "text/plain": {
-                  "schema": {
-                    "type": "string"
-                  }
-                }
-              },
-              headers: {
-                'x-ratelimit-limit': {
-                  schema: {
-                    type: 'integer',
-                    format: 'int32',
-                  },
-                  description: 'calls per hour allowed by the user'
-                },
-                'x-ratelimit-remaining': {
-                  schema: {
-                    type: 'integer',
-                    format: 'int32',
-                  },
-                  description: 'number of remaining calls in the current rate limit window'
-                }
-              },
-
-              "description": "successful operation",
-            },
-            {
-              code: 'default',
-              "$ref": "#/components/schemas/Pet",
-            }
-          ]
-        },
-        post: {
-
-        },
-        parameters: [{
-          "name": "username",
-          "in": "path",
-          "description": "username to fetch",
-          "required": true,
-          schema: {
-            type: "string"
-          }
-        }]
-      }, {
-        "$ref": "http://pathItem",
-        "description": "test",
-        "path": "/demo2",
-      }]
-    });
+    expect(obj).toEqual(example_3_1_base);
   });
 });
 
@@ -207,11 +113,9 @@ describe("initServers", () => {
       basePath: '/'
     };
     expect(initServers(obj1)).toEqual([{
-      url: "http://test.com/",
-      description: ""
+      url: "http://test.com/"
     },{
-      url: "https://test.com/",
-      description: ""
+      url: "https://test.com/"
     }]);
   });
 
@@ -222,8 +126,7 @@ describe("initServers", () => {
       basePath: '/'
     };
     expect(initServers(obj1)).toEqual([{
-      url: "http://test.com/",
-      description: ""
+      url: "http://test.com/"
     }]);
   });
 });
@@ -504,6 +407,7 @@ describe("initPaths", () => {
       }
     }
     expect(initPaths(data)).toEqual([{
+      "path": "x-api",
       'x-api': 2
     }])
   })
@@ -590,6 +494,7 @@ describe("initPaths", () => {
       }
     }
     expect(initPaths(data)).toEqual([{
+      "path": "x-api",
       'x-api': 2
     },{
       path: '/demo',

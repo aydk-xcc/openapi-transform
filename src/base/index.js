@@ -3,17 +3,29 @@ export function initBaseTemplate(data) {
     let dataJson = formatData2Json(data)
     let obj = {
         version: initVersion(dataJson),
-        info: dataJson.info,
-        jsonSchemaDialect: dataJson.jsonSchemaDialect || null,
-        security: dataJson.security || null,
-        externalDocs: dataJson.externalDocs || null,
-        tags: dataJson.tags || null,
-        consumes: dataJson.consumes,
-        produces: dataJson.produces,
         servers: initServers(dataJson),
-        webhooks: dataJson.webhooks,
         paths: initPaths(dataJson),
         components: initComponents(dataJson),
+    };
+    [
+        'info',
+        'jsonSchemaDialect',
+        'security',
+        'externalDocs',
+        'tags',
+        'consumes',
+        'externalDocs',
+        'tags',
+        'consumes',
+        'produces',
+        'webhooks'
+    ].forEach(key => {
+        if (dataJson[key]) {
+            obj[key] = dataJson[key];
+        }
+    })
+    if (!Object.keys(obj.components).length) {
+        delete obj.components;
     }
     obj = initRef(obj);
     return obj;
@@ -32,6 +44,7 @@ export function initPaths(data) {
         if (path.startsWith('x-')) {
             // 2.0 版本支持x-
             return {
+                path,
                 [path]: data.paths[path]
             };
         }
@@ -63,14 +76,17 @@ export function initPaths(data) {
                             let mimTypes = getConsumes(data, pathInfo[method]);
                             let schema = bodyObj['schema'] || {};
                             methodInfo['requestBody'] = {
-                                description: bodyObj.description || '',
                                 content: {
                                     [mimTypes]: {
                                         schema: schema
                                     }
-                                },
-                                required: !!bodyObj.required
+                                }
                             };
+                            ['description', 'required'].forEach(k => {
+                                if (bodyObj[k] !== undefined) {
+                                    methodInfo['requestBody'][k] = bodyObj[k];
+                                }
+                            });
                         }
                         let parameters = [];
                         pathInfo[method][key].forEach(item => {
@@ -321,8 +337,7 @@ export function initServers(openApiDefinition) {
         }
         return arr.map(scheme => {
             return {
-                url: `${scheme}://${openApiDefinition.host}${openApiDefinition.basePath}`,
-                description: ''
+                url: `${scheme}://${openApiDefinition.host}${openApiDefinition.basePath}`
             };
         });
     }

@@ -1,12 +1,11 @@
-export const example_3 = {
-    openapi: '3.0',
+export const example_3_1 = {
+    openapi: '3.1',
     info: {
         version: '1.0',
         title: 'Swagger',
         description: '测试'
     },
     paths: {
-        'x-api': 2,
         '/demo': {
             'get': {
                 parameters: [{
@@ -14,9 +13,7 @@ export const example_3 = {
                     "in": "path",
                     "description": "username to fetch",
                     "required": true,
-                    schema: {
-                        type: "string"
-                    }
+                    "type": "string"
                 }, {
                     "name": "id",
                     "in": "header",
@@ -26,32 +23,15 @@ export const example_3 = {
                         type: "string"
                     }
                 },{
-                    $ref: "#/components/schemas/Pet"
+                    $ref: '#/definitions/Pet'
                 }],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "test": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "test"
-                                ]
-                            }
-                        }
-                    }
-                },
                 'responses': {
                     200: {
                         description: 'successful operation',
                         content: {
                             'application/json': {
                                 schema: {
-                                    $ref: "#/components/schemas/Pet"
+                                    $ref: '#/definitions/Pet'
                                 },
                                 examples: {
                                     'application/json': {
@@ -87,7 +67,7 @@ export const example_3 = {
                         }
                     },
                     default: {
-                        $ref: "#/components/schemas/Pet"
+                        $ref: '#/definitions/Pet'
                     }
                 }
             },
@@ -99,31 +79,28 @@ export const example_3 = {
                 "in": "path",
                 "description": "username to fetch",
                 "required": true,
-                schema: {
-                    type: "string"
-                }
+                "type": "string"
             }]
         },
         '/demo2': {
             '$ref': 'http://pathItem',
             description: 'test'
         }
+    },
+    jsonSchemaDialect: 'test',
+    webhooks: {
+        $ref: 'http://webhooks'
     }
 };
 
-export const example_3_base = {
-    version: '3.0',
+export const example_3_1_base = {
+    version: '3.1',
     info: {
         version: '1.0',
         title: 'Swagger',
         description: '测试'
     },
-    paths: [
-        {
-           path: 'x-api',
-            'x-api': 2,
-        },
-        {
+    paths: [{
         path: '/demo',
         'get': {
             parameters: [{
@@ -145,23 +122,6 @@ export const example_3_base = {
             },{
                 $ref: "#/components/schemas/Pet"
             }],
-            "requestBody": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "test": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "test"
-                            ]
-                        }
-                    }
-                }
-            },
             'responses': [{
                 code: "200",
                 description: 'successful operation',
@@ -224,10 +184,14 @@ export const example_3_base = {
         '$ref': 'http://pathItem',
         description: 'test'
     }],
-    servers: []
+    servers: [],
+    jsonSchemaDialect: 'test',
+    webhooks: {
+        $ref: 'http://webhooks'
+    }
 }
 
-export const example_3_to_2 = {
+export const example_3_1_to_2 = {
     swagger: '2.0.0',
     info: {
         version: '1.0',
@@ -235,7 +199,6 @@ export const example_3_to_2 = {
         description: '测试'
     },
     paths: {
-        'x-api': 2,
         '/demo': {
             'get': {
                 parameters: [{
@@ -250,22 +213,8 @@ export const example_3_to_2 = {
                     "description": "username to fetch",
                     "required": true,
                     type: "string"
-                }, {
+                },{
                     $ref: '#/definitions/Pet'
-                }, {
-                    "name": "body",
-                    "in": "body",
-                    schema: {
-                        type: 'object',
-                        properties: {
-                            test: {
-                                type: 'string'
-                            }
-                        },
-                        "required": [
-                            'test'
-                        ]
-                    }
                 }],
                 'responses': {
                     200: {
@@ -321,8 +270,8 @@ export const example_3_to_2 = {
     }
 }
 
-export const example_3_to_3_1 = {
-    openapi: '3.1.0',
+export const example_3_1_to_3 = {
+    openapi: '3.0.0',
     info: {
         version: '1.0',
         title: 'Swagger',
@@ -351,23 +300,6 @@ export const example_3_to_3_1 = {
                 },{
                     $ref: "#/components/schemas/Pet"
                 }],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "test": {
-                                        "type": "string"
-                                    }
-                                },
-                                "required": [
-                                    "test"
-                                ]
-                            }
-                        }
-                    }
-                },
                 'responses': {
                     200: {
                         description: 'successful operation',
